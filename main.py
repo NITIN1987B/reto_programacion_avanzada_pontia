@@ -28,13 +28,64 @@ class TaskResponse(BaseModel):
     completada: bool
     fecha_creacion: datetime
 
-# Almacenamiento en memoria
-tasks = {}
-task_counter = 0
+class Task:
+    """Representa una tarea individual del dominio, con su propio estado y comportamiento."""
 
-# TODO: Implementar clase TaskManager con lógica de negocio
-# class TaskManager:
-#     ...
+    def __init__(self, id: int, titulo: str, contenido: str, deadline: date):
+        self.id = id
+        self.titulo = titulo
+        self.contenido = contenido
+        self.deadline = deadline
+        self.completada = False
+        self.fecha_creacion = datetime.now()
+
+    def marcar_completada(self):
+        """Cambia el estado de la tarea a completada."""
+        self.completada = True
+
+    def esta_caducada(self) -> bool:
+        """Devuelve True si el deadline ya pasó y la tarea sigue sin completar."""
+        return not self.completada and self.deadline < date.today()
+
+    def __repr__(self):
+        return f"Task(id={self.id}, titulo='{self.titulo}', completada={self.completada})"
+    
+
+# Almacenamiento en memoria
+class TaskManager:
+    """Clase de servicio que encapsula la lógica de negocio y gestiona la colección de tareas en memoria."""
+
+    def __init__(self):
+        self.tasks: dict[int, Task] = {}
+        self.contador = 0
+
+    def crear_tarea(self, titulo: str, contenido: str, deadline: date) -> Task:
+        """Crea una nueva tarea, le asigna un id autoincremental y la guarda en memoria."""
+
+        self.contador += 1
+        nueva_tarea = Task(self.contador, titulo, contenido, deadline)
+        self.tasks[nueva_tarea.id] = nueva_tarea
+        return nueva_tarea
+
+    def obtener_tarea(self, task_id: int) -> Task | None:
+        """Devuelve la tarea con ese id, o None si no existe."""        
+        return self.tasks.get(task_id)
+
+    def marcar_completada(self, task_id: int) -> Task | None:
+        """Marca una tarea como completada. Devuelve None si el id no existe."""        
+        tarea = self.obtener_tarea(task_id)
+        if tarea is None:
+            return None
+        tarea.marcar_completada()
+        return tarea
+
+    def obtener_caducadas(self) -> list[Task]:
+        """Devuelve todas las tareas caducadas (deadline pasado y no completadas)."""
+        return [t for t in self.tasks.values() if t.esta_caducada()]
+
+
+
+
 
 # TODO: Implementar endpoints
 # @app.post("/tasks/", response_model=TaskResponse, status_code=status.HTTP_201_CREATED)

@@ -1,5 +1,5 @@
 from fastapi import FastAPI, HTTPException, status
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from datetime import datetime, date
 from typing import List
 
@@ -10,6 +10,12 @@ class TaskCreate(BaseModel):
     titulo: str = Field(min_length=1, description="Título de la tarea")
     contenido: str = Field(min_length=1, description="Contenido de la tarea")
     deadline: date = Field(description="Fecha de vencimiento")
+    #Añadimos validacion deadline 
+    @field_validator("deadline")
+    def deadline_no_puede_ser_pasado(cls,value):
+        if value < date.today():
+            raise ValueError("La fecha de vencimiento no puede ser anterior a la de hoy")
+        return value
 
 class TaskUpdate(BaseModel):
     completada: bool = Field(description="Estado de completado")

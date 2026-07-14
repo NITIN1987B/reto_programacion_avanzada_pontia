@@ -126,9 +126,12 @@ def obtener_tarea(task_id: int):
 
 @app.put("/tasks/{task_id}/completar", response_model=TaskResponse)
 def marcar_completada(task_id: int):
-    tarea = task_manager.marcar_completada(task_id)
+    tarea = task_manager.obtener_tarea(task_id)
     if tarea is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tarea no encontrada")
+    if tarea.completada:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="La tarea ya estaba completada")
+    tarea.marcar_completada()
     return TaskResponse(
         id=tarea.id, titulo=tarea.titulo, contenido=tarea.contenido,
         deadline=tarea.deadline, completada=tarea.completada, fecha_creacion=tarea.fecha_creacion,

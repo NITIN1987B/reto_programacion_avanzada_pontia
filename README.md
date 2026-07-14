@@ -40,10 +40,13 @@ La API estará disponible en `http://localhost:8000`
 
 ### TODO: Documentar todos los endpoints
 
-- `GET /` - Información de la API
-- `POST /tasks/` - Crear una nueva tarea
-- `GET /tasks/{task_id}` - Obtener una tarea por ID
-- `PUT /tasks/{task_id}/completar` - Marcar una tarea como completada
+- `GET /` - Información de la API - comprueba que la API está funcionando.
+- `POST /tasks/` - Crear una nueva tarea : Hay que mandar título, contenido y deadline. 
+                    Si el deadline es una fecha pasada o el título/contenido  está vacío, devuelve error 422. 
+                    Si todo va bien, devuelve 201 con la tarea creada (con su id y fecha de creación)
+- `GET /tasks/{task_id}` - Obtener una tarea por ID. Si no existe, da 404.
+- `PUT /tasks/{task_id}/completar` - Marcar una tarea como completada. Da 404 si el id no existe, 
+                                    y 400 si la tarea ya estaba completada de antes (no se puede completar dos veces).
 - `GET /tasks/caducadas` - Obtener lista de tareas caducadas
 
 ## Ejecutar tests

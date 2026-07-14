@@ -85,25 +85,58 @@ class TaskManager:
 
 
 
+task_manager = TaskManager()   # instancia única que usarán todos los endpoints para guardar/consultar tareas
 
 
-# TODO: Implementar endpoints
-# @app.post("/tasks/", response_model=TaskResponse, status_code=status.HTTP_201_CREATED)
-# def crear_tarea(task: TaskCreate):
-#     ...
+@app.post("/tasks/", response_model=TaskResponse, status_code=status.HTTP_201_CREATED)
+def crear_tarea(task: TaskCreate):
+    nueva_tarea = task_manager.crear_tarea(task.titulo, task.contenido, task.deadline)
+    return TaskResponse(
+        id=nueva_tarea.id,
+        titulo=nueva_tarea.titulo,
+        contenido=nueva_tarea.contenido,
+        deadline=nueva_tarea.deadline,
+        completada=nueva_tarea.completada,
+        fecha_creacion=nueva_tarea.fecha_creacion,
+    )
 
-# @app.get("/tasks/{task_id}", response_model=TaskResponse)
-# def obtener_tarea(task_id: int):
-#     ...
 
-# @app.put("/tasks/{task_id}/completar", response_model=TaskResponse)
-# def marcar_completada(task_id: int):
-#     ...
+@app.get("/tasks/caducadas", response_model=List[TaskResponse])
+def obtener_tareas_caducadas():
+    caducadas = task_manager.obtener_caducadas()
+    return [
+        TaskResponse(
+            id=t.id, titulo=t.titulo, contenido=t.contenido,
+            deadline=t.deadline, completada=t.completada, fecha_creacion=t.fecha_creacion,
+        )
+        for t in caducadas
+    ]
 
-# @app.get("/tasks/caducadas", response_model=List[TaskResponse])
-# def obtener_tareas_caducadas():
-#     ...
+
+@app.get("/tasks/{task_id}", response_model=TaskResponse)
+def obtener_tarea(task_id: int):
+    tarea = task_manager.obtener_tarea(task_id)
+    if tarea is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tarea no encontrada")
+    return TaskResponse(
+        id=tarea.id, titulo=tarea.titulo, contenido=tarea.contenido,
+        deadline=tarea.deadline, completada=tarea.completada, fecha_creacion=tarea.fecha_creacion,
+    )
+
+
+@app.put("/tasks/{task_id}/completar", response_model=TaskResponse)
+def marcar_completada(task_id: int):
+    tarea = task_manager.marcar_completada(task_id)
+    if tarea is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tarea no encontrada")
+    return TaskResponse(
+        id=tarea.id, titulo=tarea.titulo, contenido=tarea.contenido,
+        deadline=tarea.deadline, completada=tarea.completada, fecha_creacion=tarea.fecha_creacion,
+    )
+
 
 @app.get("/")
 def root():
     return {"message": "Task Management API"}
+
+
